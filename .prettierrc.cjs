@@ -4,5 +4,6 @@ module.exports = {
   singleQuote: true, // 使用单引号
   printWidth: 100, // 每行最大长度
   tabWidth: 2, // 缩进 2 个空格
-  trailingComma: 'none' // 不使用尾逗号
+  trailingComma: 'none', // 不使用尾逗号
+  vueIndentScriptAndStyle: true // ✅ 控制 <script> 和 <style> 内缩进
 };

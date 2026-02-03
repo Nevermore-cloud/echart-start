@@ -1,51 +1,74 @@
 import { defineConfig } from 'eslint/config';
 import js from '@eslint/js';
 import globals from 'globals';
-import tsPlugin from 'typescript-eslint';
-import vuePlugin from 'eslint-plugin-vue';
+import tseslint from '@typescript-eslint/eslint-plugin';
+import vuePluginPkg from 'eslint-plugin-vue';
 
-// 获取当前文件的目录
 import { fileURLToPath } from 'node:url';
 import { dirname } from 'node:path';
-// 获取当前文件的文件名
+
+import vueParser from 'vue-eslint-parser';
+import tsParser from '@typescript-eslint/parser';
+
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
-
+// console.log('__dirname:sssssssssssssssssssssssssssssssssss', __dirname);
 export default defineConfig([
-  // 1️⃣ JS 文件
+  // JS
   {
     files: ['**/*.{js,mjs,cjs}'],
     languageOptions: {
-      globals: globals.browser,
-      parserOptions: { ecmaVersion: 2020, sourceType: 'module' }
+      globals: globals.browser
     },
-    extends: ['js/recommended']
+    ...js.configs.recommended
   },
 
-  // 2️⃣ TS 文件
+  // TS
   {
-    files: ['**/*.{ts,cts,mts}'],
+    files: ['src/**/*.{ts,tsx}'],
     languageOptions: {
-      parser: tsPlugin.parser,
-      parserOptions: { project: './tsconfig.json', tsconfigRootDir: __dirname }
+      parser: tsParser,
+      // parser: '@typescript-eslint/parser',
+      // parser: 'vue-eslint-parser', // ✅ 正确
+      parserOptions: {
+        project: './tsconfig.eslint.json',
+        tsconfigRootDir: __dirname
+      }
     },
-    extends: [tsPlugin.configs.recommended]
+    plugins: {
+      '@typescript-eslint': tseslint
+    },
+    rules: {
+      ...tseslint.configs.recommended.rules
+    }
   },
 
-  // 3️⃣ Vue 文件
+  // Vue files
   {
-    files: ['**/*.vue'],
+    files: ['src/**/*.vue'],
     languageOptions: {
-      parser: tsPlugin.parser,
-      parserOptions: { project: './tsconfig.json', extraFileExtensions: ['.vue'] }
+      parser: vueParser,
+      parserOptions: {
+        parser: tsParser,
+        project: './tsconfig.eslint.json',
+        tsconfigRootDir: __dirname,
+        extraFileExtensions: ['.vue'],
+        //修改解析选项
+        ecmaVersion: 'latest',
+        sourceType: 'module'
+      }
     },
-    plugins: { vue: vuePlugin },
-    extends: [vuePlugin.configs['vue3-recommended']]
-  },
+    plugins: {
+      vue: vuePluginPkg
+    },
 
-  // 4️⃣ Prettier 集成
-  {
-    files: ['**/*.{js,ts,vue}'],
-    extends: ['plugin:prettier/recommended'] // 自动关闭 ESLint 与 Prettier 冲突规则
+    rules: {
+      'vue/no-unused-vars': 'warn',
+      'vue/require-default-prop': 'off',
+      // 'vue/html-indent': ['error', 2], // 缩进4个空格
+      'vue/multi-word-component-names': 'off'
+    }
   }
+  // 直接使用 eslint-plugin-vue 提供的 flat config
+  // vuePluginPkg.configs['flat/vue3-recommended']
 ]);
